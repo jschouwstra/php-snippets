@@ -1,63 +1,62 @@
 <?php
-function DBConnect(){
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "movie-theatre";
-	$connection = new mysqli($servername, $username, $password, $dbname);
-
-	if ($connection->connect_error){
-	    die("Connection failed: " . $connection->connect_error);
+// Report all errors except E_NOTICE
+error_reporting(E_ALL & ~E_NOTICE);
+include "functions.php";
+connectDB();
+//$seatsAvailable = [];
+$seatReservation = [];
+$gap = 0;
+$visitors = 3;
+// $start = 0;
+$seatNumber = ""; 
+$seats = fetchSeats();
+echo "<h2>".$visitors." visitors</h2>";
+while($seat = $seats->fetch_assoc()){
+	//seat available
+	if($seat['seatAvailable']){
+		//when there's no gap set the current seatnumber and increment the gap size
+		//so we know how much capacity there is for the visitors.
+		if($gap == 0){
+			$seatNumber = $seat['seatNumber'];
+		}
+		$gap++;
 	}
+	//seat taken
 	else{
-		return $connection;	
-	}	
-}
-
-function giveSeatNumbers($visitors){
-	/*
-		within the list from db,find a gap and try to fit the visitors in the seats array, 
-		each visitor must get one seat, if available, starting with the lowest value.
-	*/
-	//assign seats to the visitors:		
-	$seats = array();
-	echo "<ol>";
-	for($x = 1; $x < $visitors+1; $x++){
-		array_push($seats,$x);
-	}
-	echo "</ol>";			
-
-}
-
-function getSeats(){
-	DBConnect();
-	$sql = "SELECT seats.* FROM seats 
-	WHERE seats.Available = 1;
-	";
-	$result = DBConnect()->query($sql);
-	return $result;
-}
-
-
-$seats = getSeats();
-echo "<p>Seats from database:</p>";
-for($x=0; $x<5; $x++){
-	while($seat = $seats->fetch_assoc()) {
-		echo '<span style="border:1px solid black;padding:10px;margin:1px;">'.$seat['seatNumber'].'</span>';
+		//If there's a gap
+			if($gap > 0){	
+				//If the quantity of visitors fit in the gap
+				if($visitors <= $gap){
+					echo "it fits";
+					suggestSeats($seatNumber,$visitors);
+					echo "<strong>Seat: ".$seatNumber. "(gap size: ".$gap. ")</strong></br>";
+				}
+				// $start = 1;
+				$gap = 0;
+				//$seatNumber = "";
+			}
 	}
 }
 
-//This is where I define the number of visitors
-$quantityVisitors = 10;
-giveSeatNumbers($quantityVisitors);
+if($gap > 0) {
+	if($visitors <= $gap){
+		echo "it fits";
+		//suggestSeats($seatNumber,$visitors);
+		echo "<strong>Seat: ".$seatNumber. "(gap size: ".$gap. ")</strong></br>";
+
+	}
+	//echo "<strong>Seat: ".$seatNumber. "(gap size: ".$gap. ")</strong>";
+}
+$array = suggestSeats($seatNumber,$visitors);
+
+echo "<pre>";
+print_r($array);
+echo "<pre>";
+echo "<ul>";
+foreach($array as $reservation){
+	echo "<li>seatNumber: ".$reservation['seatNumber']."</li>";
+	echo "Visitor: ".$reservation['currentVisitor']."</li>";
+}
+echo "</ul>";
+
 ?>
-<p>
-	Quantity of tickets ordered: <?php echo $quantityVisitors;?>
-</p>
-<p>
-	The following seats will be assigned to you:
-</p>
-
-
-
-
