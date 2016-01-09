@@ -11,7 +11,7 @@ function connectDB(){
 	}
 	else{
 		return $connection;	
-	}	
+	}
 }
 
 function fetchSeats(){
@@ -21,10 +21,13 @@ function fetchSeats(){
 	$result = connectDB()->query($sql);
 	while($seats = $result->fetch_assoc()){
 		$myArray[] = array(
-				'seatNumber' => $seats['seatNumber'],
-				'seatAvailable' => $seats['seatAvailable'],
-			);
+			'seatNumber' => $seats['seatNumber'],
+			'seatAvailable' => $seats['seatAvailable'],
+		);
 	}
+	$myArray[] = array(
+		'arrayPosition' => 'end',
+	);
 	return $myArray;
 }
 

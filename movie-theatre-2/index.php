@@ -3,9 +3,7 @@
 error_reporting(E_ALL & ~E_NOTICE);
 include "functions.php";
 connectDB();
-
 $array = fetchSeats();
-
 $visitors = 3;
 $startingSeatNumber = 0;
 $gap = 0;
@@ -16,7 +14,6 @@ foreach($array as $seat){
 			$startingSeatNumber = $seat['seatNumber'];
 		}
 		$gap++;
-
 	}
 	//seat taken
 	else{
