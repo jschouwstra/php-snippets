@@ -409,6 +409,16 @@ foreach ($master as $index => $seat) {
 }
 ?>
 
+<?php
+$myString = "Apple,Pear,Banana,Tomato,Eggs,Milk";
+$myArray = explode(',',$myString);
+echo "<ul>";
+foreach($myArray as $groceryList){
+	echo "<li>".$groceryList."</li>";
+}
+echo "</ul>";
+?>
+
 
 
 

@@ -51,7 +51,7 @@ $array = suggestSeats($seatNumber,$visitors);
 
 echo "<pre>";
 print_r($array);
-echo "<pre>";
+echo "</pre>";
 echo "<ul>";
 foreach($array as $reservation){
 	echo "<li>seatNumber: ".$reservation['seatNumber']."</li>";
