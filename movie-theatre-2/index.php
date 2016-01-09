@@ -19,12 +19,21 @@ foreach($array as $seat){
 	else{
 		echo "<b>gap: ".$gap."</b>";
 		if($gap > 0){
-			
+			if($visitors <= $gap){
+				$array = giveSeatNumbers($startingSeatNumber,$visitors);
+				echo "Your assigned seats: ";
+				foreach($array as $seat){
+					echo "Seat: ".$seat['seatNumber'];
+				}
+				exit;
+			}
 			$gap = 0;
 		}
 	}
 
 	echo "Seat: ".$seat['seatNumber']." Gap size".$gap."</br>";
+
+
 }
 echo "<pre>";
 print_r($array);

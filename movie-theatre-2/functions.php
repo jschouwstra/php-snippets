@@ -31,34 +31,16 @@ function fetchSeats(){
 	return $myArray;
 }
 
-function availableSeats(){
-	$seats = fetchSeats();
-	while($seat = $seats->fetch_assoc()){
-		$myArray[] = array(
-			'seatNumber' => $seat['seatNumber'],
-		);
-	}
-	return $myArray;
-}
-/*--------------------------------------
-****************************************
-*****	Temporary functions:     *******
-****************************************
-----------------------------------------*/
-
-function suggestSeats($startingSeatNumber,$quantity) {
+function giveSeatNumbers($startingSeatNumber,$quantity) {
 	$array = array();
 	$currentVisitor = 1;
 	for($x=0; $x < $quantity; $x++) {
-				$array[] = array(
-					'seatNumber' => $startingSeatNumber,
-					'currentVisitor' => $currentVisitor
-				);
-			//echo $startingSeatNumber;
-			//echo "visitor: ".$currentVisitor;
-
-			$currentVisitor++;
-			$startingSeatNumber++;	
+		$array[] = array(
+			'seatNumber' => $startingSeatNumber,
+			'currentVisitor' => $currentVisitor
+		);
+		$currentVisitor++;
+		$startingSeatNumber++;	
 	}	
 
 	return $array;
