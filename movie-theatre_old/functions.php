@@ -11,7 +11,7 @@ function connectDB(){
 	}
 	else{
 		return $connection;	
-	}
+	}	
 }
 
 function fetchSeats(){
@@ -19,28 +19,22 @@ function fetchSeats(){
 	$sql = "SELECT seats.* FROM seats 
 	";
 	$result = connectDB()->query($sql);
-	while($seats = $result->fetch_assoc()){
-		$myArray[] = array(
-			'seatNumber' => $seats['seatNumber'],
-			'seatAvailable' => $seats['seatAvailable'],
-		);
-	}
-	$myArray[] = array(
-		'arrayPosition' => 'end',
-	);
-	return $myArray;
+	return $result;
 }
 
-function giveSeatNumbers($startingSeatNumber,$quantity) {
+function suggestSeats($startingSeatNumber,$quantity) {
 	$array = array();
 	$currentVisitor = 1;
 	for($x=0; $x < $quantity; $x++) {
-		$array[] = array(
-			'seatNumber' => $startingSeatNumber,
-			'currentVisitor' => $currentVisitor
-		);
-		$currentVisitor++;
-		$startingSeatNumber++;	
+				$array[] = array(
+					'seatNumber' => $startingSeatNumber,
+					'currentVisitor' => $currentVisitor
+				);
+			//echo $startingSeatNumber;
+			//echo "visitor: ".$currentVisitor;
+
+			$currentVisitor++;
+			$startingSeatNumber++;	
 	}	
 
 	return $array;

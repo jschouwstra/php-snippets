@@ -408,8 +408,9 @@ foreach ($master as $index => $seat) {
     }
 }
 ?>
-
 <?php
+//explode
+
 $myString = "Apple,Pear,Banana,Tomato,Eggs,Milk";
 $myArray = explode(',',$myString);
 echo "<ul>";

@@ -16,6 +16,7 @@ function connectDB(){
 }
 
 function fetchSeats(){
+
 	connectDB();
 	$sql = "SELECT seats.* FROM seats 
 	";
@@ -96,6 +97,7 @@ function orderTickets(){
 			$gap = 0;
 			//Fetch the seats from the database
 			$seats = fetchSeats();
+			$gaps = array();
 			foreach($seats as $seat){
 				//seat available
 				if($seat['seatAvailable']){
@@ -124,41 +126,45 @@ function orderTickets(){
 						}
 						//If the visitors don't fit in the gap
 						else{
+							//Make array of gaps 
+							$gaps[] = array(
+								'gapSize' => $gap,
+								);
+							//And check for the biggest gap
 
-							echo "<b>".$gap."</b>";
-							$highestGap = 0;
-							if($gap > $highestGap){ 
-								$highestGap=$gap;
-								echo "<i>".$highestGap."</i>";
-								//echo $visitors-$highestGap;
-							}
-
-							//exit;
 						}
 						$gap = 0;
 					}
 					closeRowTag();
 				}
 					
-			}
+			}//End foreach(seats)
+			print_r($gaps);
+			// 
+			$max = max($gaps);
+			echo $visitors-$max['gapSize'];
 		}
 	}
 	/*++++++++++++++++++++++++++++++++++++++++++++++++++++
 	++++++++ Check if we can place the visitors at all +++
 	+++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
 	if($gap>=$highestGap){ 
 		$highestGap=$gap;
-		//echo $visitors-$highestGap;
 	}
 	//If the visitors can't fit in the gap of available seats.
 	if($highestGap<$visitors){
 		openRowTag()
 		?>
 		<div class="alert alert-danger">Sorry, we hebben niet genoeg zitplaatsen</div>
-		<?php				
+		
+
+ 		<?php				
 		closeRowTag();
 	}
+}
+
+function checkBiggestGap(){
+
 }
 
 function openRowTag(){
