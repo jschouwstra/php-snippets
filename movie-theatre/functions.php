@@ -1,186 +1,104 @@
 <?php
+function Connect(){
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "movie-theatre";
 
-function connectDB(){
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "movie-theatre";
-	$connection = new mysqli($servername, $username, $password, $dbname);
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    return $conn;
+}
+function showSeats($seats){
+    echo "<div class=\"container\">
+            <div class=\"row\">
+                <div class=\"col-md-6\">
+                    <h1>Beschikbaarheid stoelen</h1>";
+               
+                    $showSeats = $seats;
+                    foreach($showSeats as $seat){
+                        if($seat['seatAvailable'] == '1'){
+                            echo "<span style=\"background-color:green; border:1px solid black; margin:2px; padding:4px; width: 4px;\">".$seat['seatNumber']."</span>";
+                        }
+                        elseif($seat['seatAvailable'] == '0'){
+                            echo "<span style=\"background-color:red; border:1px solid black; margin:2px; padding:4px; width: 4px;\">".$seat['seatNumber']."</span>";
+                        }
+                        else{
+                            echo "<span style=\"background-color:yellow; border:1px dashed black; margin:2px; padding:4px; width: 4px;\">".$seat['seatNumber']."</span>";
+                        }
+                    }
+        echo "</div>
+            </div>
+        </div>";
+}
+function suggestSeats($seats,$visitors){
+    //Declare temporary version of $visitors so the value won't change during "subtraction"
+    $visitorsToProcess = $visitors;
+    foreach($seats as &$val){
+        //If available
+        if($val['seatAvailable'] == 1){
+            //If there's no gap, start making one now:
+            if($gap<1){
+                $gap = 1;
+            }
+            $gap++;
+            //IF THERE ARE STILL VISITORS TO PROCESS, MARK THE SUGGESTED SEAT
+            if($visitorsToProcess > 0) {
+                $val['seatAvailable'] = 'x';
 
-	if ($connection->connect_error){
-	    die("Connection failed: " . $connection->connect_error);
-	}
-	else{
-		return $connection;	
-	}
+                //Subtract until there are no more visitors left.
+                $visitorsToProcess--;
+            }
+        }
+        //IF THERE ARE NO MORE VISITORS, EXIT LOOP
+        if($visitorsToProcess == 0) {
+            break;
+        }
+    }
+    //echo "gap: ".$gap;
+    //echo $visitors;
+    //If the visitors fit in gap
+    if($visitors<$gap){
+        //echo $gap;
+        $result = $seats;
+    }
+    //If the visitors can't fit in the gap of available seats.
+    else{
+        $result = null;
+    }
+
+    return $result;
+}
+function clearTableSeats(){
+        $conn = Connect();
+        $sql = "TRUNCATE TABLE seats";
+        mysqli_query($conn,$sql);
 }
 
-function fetchSeats(){
+function saveSeats($seats){
+    clearTableSeats();    
+    $conn = Connect();
+    if($seats){
+    foreach($seats as $seat){
+        $seatAvailable = $seat['seatAvailable'];
+        if($seatAvailable == 'x'){
+            $seatAvailable = 0;
+        }
+        $seatNumber = $seat['seatNumber'];
+        $sql = "INSERT INTO seats 
+        (seatAvailable,seatNumber)
+        VALUES 
+        ($seatAvailable,$seatNumber)";
 
-	connectDB();
-	$sql = "SELECT seats.* FROM seats 
-	";
-	$result = connectDB()->query($sql);
-	while($seats = $result->fetch_assoc()){
-		$myArray[] = array(
-			'seatNumber' => $seats['seatNumber'],
-			'seatAvailable' => $seats['seatAvailable'],
-		);
-	}
+        $conn->query($sql);
+    }
+    $conn->close();
+    }
 
-	/* 
-		Add an extra array item to prevent skipping the last gap validation.
-		We are looking for an open gap when the script meets an unavailable seat,
-		When the last gap meets no unavailable seat it skips the gap because of the
-		absence of an available seat, that's why there will be a last item added to the array,
-		a hoax "unavailable" seat.
-	*/
-	$myArray[] = array(
-		'arrayPosition' => 'end',
-	);
-	return $myArray;
-}
-function giveSeatNumbers($startingSeatNumber,$quantity) {
-	$array = array();
-	$currentVisitor = 1;
-	for($x=0; $x < $quantity; $x++) {
-		$array[] = array(
-			'seatNumber' => $startingSeatNumber,
-			'currentVisitor' => $currentVisitor
-		);
-		$currentVisitor++;
-		$startingSeatNumber++;	
-	}	
-
-	return $array;
-}
-
-// function randomSeatArray($quantity){
-// 	$SeatArray = array();
-// 	$number = 1;
-// 	for($i=1;$i<$quantity+1;$i++){
-// 		$SeatArray[] = array(
-// 			'seatNumber' => $number,
-// 			'seatAvailable' => rand(0,1),
-// 		);	
-// 		$number++;
-// 	}
-// 	return $SeatArray;
-// }
-function showSeats(){
-	$seats = fetchSeats();
-	array_pop($seats);
-	foreach($seats as $seat){
-		if($seat['seatAvailable']){
-			echo "<span style=\"background-color:green; margin:2px; padding:4px; width: 4px;\">".$seat['seatNumber']."</span>";
-		}
-		else{
-			echo "<span style=\"background-color:red; margin:2px; padding:4px; width: 4px;\">".$seat['seatNumber']."</span>";
-		}
-	}
-}
-
-function orderTickets(){
-	/*+++++++++++++++++++++++++++++++
-	++++++++ Order tickets ++++++++++
-	+++++++++++++++++++++++++++++++*/
-	$visitors = $_POST['visitors'];
-	if(isset($_POST['ok'])){
-		//If there's no value in 
-		if($visitors < 1){
-			openRowTag(); ?>
-			<div class="alert alert-danger">Gelieve een aantal tickets in te voeren.</div>
-			<?php closeRowTag();
-		}
-		else{
-			$startingSeatNumber = 0;
-			$gap = 0;
-			//Fetch the seats from the database
-			$seats = fetchSeats();
-			$gaps = array();
-			foreach($seats as $seat){
-				//seat available
-				if($seat['seatAvailable']){
-					/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-					++++++++ Set the startingSeatNumber and start making the gap ++++
-					+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-					if($gap == 0){
-						$startingSeatNumber = $seat['seatNumber'];
-					}
-					$gap++;
-				}
-				//seat taken
-				else{
-					openRowTag();
-					//If gap exists
-					if($gap > 0){
-						//If visitors fit in gap
-						if($visitors <= $gap){
-							$seatReservation = giveSeatNumbers($startingSeatNumber,$visitors,$gap);
-							echo "<p>Aantal tickets: ".$visitors."</p>";
-							echo "<p>De volgende stoelen worden u toegewezen:</p>";
-							foreach($seatReservation as $seat){
-								echo "Stoelnummer: ".$seat['seatNumber']."</br>";
-							}
-							exit;
-						}
-						//If the visitors don't fit in the gap
-						else{
-							//Make array of gaps 
-							$gaps[] = array(
-								'gapSize' => $gap,
-								);
-							//And check for the biggest gap
-
-						}
-						$gap = 0;
-					}
-					closeRowTag();
-				}
-					
-			}//End foreach(seats)
-			print_r($gaps);
-			// 
-			$max = max($gaps);
-			echo $visitors-$max['gapSize'];
-		}
-	}
-	/*++++++++++++++++++++++++++++++++++++++++++++++++++++
-	++++++++ Check if we can place the visitors at all +++
-	+++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-	if($gap>=$highestGap){ 
-		$highestGap=$gap;
-	}
-	//If the visitors can't fit in the gap of available seats.
-	if($highestGap<$visitors){
-		openRowTag()
-		?>
-		<div class="alert alert-danger">Sorry, we hebben niet genoeg zitplaatsen</div>
-		
-
- 		<?php				
-		closeRowTag();
-	}
-}
-
-function checkBiggestGap(){
-
-}
-
-function openRowTag(){
-	echo "
-		<div class=\"container\">
-		<div class=\"row\">
-		<div class=\"col-md-6\">
-		<p>
-	";
-}
-function closeRowTag(){
-	echo "
-		</p>
-		</div>
-		</div>
-		</div>
-	";
+    echo "done!";
 }
 ?>
