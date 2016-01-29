@@ -17,8 +17,9 @@ function showSeats($seats){
     echo "<div class=\"container\">
             <div class=\"row\">
                 <div class=\"col-md-6\">
-                    <h1>Beschikbaarheid stoelen</h1>";
-               
+                <p>
+                ";
+                    
                     $showSeats = $seats;
                     foreach($showSeats as $seat){
                         if($seat['seatAvailable'] == '1'){
@@ -31,7 +32,8 @@ function showSeats($seats){
                             echo "<span style=\"background-color:yellow; border:1px dashed black; margin:2px; padding:4px; width: 4px;\">".$seat['seatNumber']."</span>";
                         }
                     }
-        echo "</div>
+        echo "  </p>
+                </div>
             </div>
         </div>";
 }
@@ -98,7 +100,38 @@ function saveSeats($seats){
     }
     $conn->close();
     }
+}
 
-    echo "done!";
+function layoutAlert($alertType,$message) {
+// $alertType "succes", "danger"    
+echo "
+<div class=\"container\">
+    <div class=\"row\">
+        <div class=\"col-md-6\">
+        <p>
+        <div class=\"alert alert-".$alertType."\">".$message."</div>
+        </p>
+        </div
+    </div>
+</div> 
+";
+}
+
+function layoutHeader($header,$content){
+
+echo "
+    <div class=\"container\">
+        <div class=\"row\">
+            <div class=\"col-md-6\">
+                <h2>".$header."</h2>
+            </div>
+        </div>        
+        <div class=\"row\">
+            <div class=\"col-md-6\">
+                <p>".$content."</p>
+            </div>
+        </div>
+    </div>   
+";
 }
 ?>
