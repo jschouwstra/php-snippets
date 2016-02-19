@@ -1,0 +1,16 @@
+{
+    "name": "jelle/database-case",
+    "authors": [
+        {
+            "name": "Jelle Schouwstra",
+            "email": "schouwstra.jelle@gmail.com"
+        }
+    ],
+    
+      "autoload": {
+    "classmap": [
+      "domain"
+    ]
+  }
+}
+
